@@ -1,0 +1,4 @@
+global:
+  application_name: flasky3
+  default_platform: python-3.6
+  default_region: us-east-1
