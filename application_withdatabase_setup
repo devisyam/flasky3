@@ -1,0 +1,158 @@
+database setup in centos:
+ yum update -y
+ yum install epel-release -y
+ 
+install maria Db package:
+ for rpm based os we use mariadb for other os we use mysql
+ yum install git mariadb-server -y
+
+starting and enabling mariadb-server:
+ systemctl start mariadb
+ systemctl enable mariadb
+ 
+run mysql secure installation script:
+ mysql_secure_installation
+here create password for root user to access database and give all permission by entering y command
+by using exit command you can exit from there
+
+now we can login maria db service by using this  command:
+mysql -u root -padmin123     123 means i set password for root user
+create database accounts;  here account means database name
+grant all privileges on accounts.* TO 'admin'@'%' identified by 'admin123' ;
+FLUSH PRIVILEGES;
+exit;
+download source code & initialize database.
+git clone https://github.com/devopshydclub/vprofile-project.git
+cd vprofile-project 
+mysql -u root -padmin123 accounts <src/main/resources/db_backup.sql
+mysql -u root -padmin123 accounts
+mysql >show tables;
+restart mariadb-server:
+systemctl restart mariadb
+
+starting the firewall and allowing the mariadb to access from port no.3306
+systemctl start firewalld
+systemctl enable firewalld
+firewall-cmd--get-active-zones
+firewall-cmd--zone=public--add-port=3306tcp --permanent
+firewall-cmd--reload
+systemctl restart mariadb
+systemctl status mariadb
+
+installation memcached in centos:
+ 
+yum update -y
+yum install epel-release -y
+yum install memcached -y
+systemctl start memcached
+systemctl enable memcached
+memcached -p 11211 -u 11111 -u memcached -d
+ss -tunlp | grep 11211 
+installation setup rabbitmq in centos:
+ yum update -y
+cd /tmp/
+  wget http://packages.erlang-solutions.com/erlang-solutions-2.0-1.noarch.rpm
+   sudo rpm -Uvh erlang-solutions-2.0-1.noarch.rpm
+   sudo yum -y install erlang socat
+    curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | sudo bash
+     sudo yum install rabbitmq-server -y
+ sudo systemctl start rabbitmq-server
+ systemctl enable rabbitmq-server
+ systemctl status rabbitmq-server
+echo "[{rabbit, [{loopback_users, []}]}]." > /etc/rabbitmq/rabbitmq.config
+ rabbitmqctl add_user test test test means user&passwd
+ rabbitmqctl set_user_tags test adminstrator
+systemctl restart rabbitmq-server
+
+installation tomcat setup in centos:
+1 yum update -y
+2  yum install java-1.8.0-openjdk -y
+3 yum install maven git wget -y
+4 cd /tmp/
+5   wget https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.37/bin/apache-tomcat-8.5.37.tar.gz
+
+6  tar -zxvf apache-tomcat-8.5.37.tar.gz
+add tomcat user
+7  useradd --home-dir /usr/local/tomcat8 --shell /sbin/nologin tomcat
+copy data to tomcat homedir
+8  cp -r apache-tomcat-8.5.37/* /usr/local/tomcat8/
+
+make tomcat user owner of tomcat home dir
+
+9   chown tomcat.tomcat /usr/local/tomcat8 -R
+10  vi /etc/systemd/system/tomcat.service
+
+[Unit]
+Description=Tomcat
+
+[Service]
+User=tomcat
+WorkingDirectory=/usr/local/tomcat8
+Environment=JRE_HOME=/usr/lib/jvm/jre
+Environment=JAVA_HOME=/usr/lib/jvm/jre
+Environment=CATALINA_HOME=/usr/local/tomcat8
+Environment=CATALINE_BASE=/usr/local/tomcat8
+ExecStart=/usr/local/tomcat8/bin/catalina.sh run
+ExecStop=/usr/local/tomcat8/bin/shutdown.sh
+SyslogIdentifier=tomcat-%i
+
+[Install]
+WantedBy=multi-user.target
+
+
+systemctl daemon-reload
+cd /tmp/
+git clone https://github.com/devisyam/vprofile-project.git
+cd vprofile-project/
+vi /src/main/resources/application.properties
+
+jdbc.username=admin
+jdbc.password=123
+
+#Memcached Configuration For Active and StandBy Host
+#For Active Host
+memcached.active.host=mc01
+memcached.active.port=11211
+#For StandBy Host
+memcached.standBy.host=127.0.0.2
+memcached.standBy.port=11211
+
+#RabbitMq Configuration
+rabbitmq.address=rmq01
+rabbitmq.port=5672
+rabbitmq.username=test
+rabbitmq.password=test
+
+#Elasticesearch Configuration
+elasticsearch.host =192.168.1.85
+elasticsearch.port =9300
+elasticsearch.cluster=vprofile
+elasticsearch.node=vprofilenode
+
+mvn install
+systemctl stop tomcat
+systemctl status tomcat
+rm -rf /usr/local/tomcat/webapps/root
+cp target/vprofile-v2.war /usr/local/tomcat8/webapps/root.war
+systemctl start tomcat
+ls /usr/local/tomcat8/webapps/
+
+
+installation nginx on ubuntu :
+
+apt update && apt upgrade -y
+sudo apt install nginx -y
+vim /etc/nginx/sites-available/vproapp
+upstream vproapp {
+ server app01:8080;
+}
+server {
+  listen 80;
+location / {
+  proxy_pass http://vproapp;
+}
+}
+ rm -rf /etc/nginx/sites-enabled/default
+ln -s /etc/nginx/sites-available/vproapp /etc/nginx/sites-enabled/vproapp
+ systemctl restart nginx
+ ifconfig
