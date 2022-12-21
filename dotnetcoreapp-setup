@@ -1,0 +1,78 @@
+install java:
+sudo apt update
+sudo apt install openjdk-8-jdk
+install jenkins:
+cd /tmp && wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+
+run the commands below to add the repository
+echo 'deb https://pkg.jenkins.io/debian-stable binary/' | sudo tee -a /etc/apt/sources.list.d/jenkins.list
+After that, run the commands below to install Jenkins
+
+sudo apt update
+sudo apt install jenkins
+systemctl start jenkins.service
+systemctl enable jenkins.service
+service jenkins status
+cat /var/lib/jenkins/secrets/initialAdminPassword
+
+in jenkins install msbuild&ms test&mstest runner plugins
+and give msbuild path in jenkins configuration
+register microsoft key and feed
+
+wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+
+sudo apt-get install apt-transport-https
+sudo apt-get update
+sudo apt-get install dotnet6 -y or the version of .net application
+dotnet —-version
+sudo apt install nuget
+sudo apt-get install nginx
+sudo service nginx start
+nano /etc/nginx/sites-available/default
+
+server {
+listen 80;
+location / {
+proxy_pass http://localhost:5000;
+proxy_http_version 1.1;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection keep-alive;
+proxy_set_header Host $http_host;
+proxy_cache_bypass $http_upgrade;
+}
+}
+
+sudo nginx -t
+sudo nginx -s reload
+sudo service nginx start
+open visudo
+give jenkins user permissions all
+
+sudo nano /etc/systemd/system/kestrel-Jenkins-test.service
+
+[Unit]
+Description=Example .NET Web API App running on Ubuntu
+[Service]
+WorkingDirectory=/var/lib/jenkins/workspace/dev/BitkemySuite.API/
+ExecStart=/usr/bin/dotnet  /var/lib/jenkins/workspace/dev/BitkemySuite.API/bin/Debug/net6.0/BitkemySuite.API.dll
+Restart=always
+# Restart service after 10 seconds if the dotnet service crashes:
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=dotnet-example
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+[Install]
+WantedBy=multi-user.target
+
+sudo systemctl enable kestrel-Jenkins-test.service
+sudo systemctl start kestrel-Jenkins-test.service
+
+choose execute shell:
+sudo systemctl stop kestrel-jenkins-test.service
+sudo service nginx stop
+dotnet publish --configuration release
+sudo systemmctl start kestrel-jenkins-test.service
+sudo service nginx start
