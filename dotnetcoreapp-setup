@@ -71,8 +71,8 @@ sudo systemctl enable kestrel-Jenkins-test.service
 sudo systemctl start kestrel-Jenkins-test.service
 
 choose execute shell:
-sudo systemctl stop kestrel-jenkins-test.service
+sudo systemctl stop kestrel-Jenkins-test.service
 sudo service nginx stop
 dotnet publish --configuration release
-sudo systemmctl start kestrel-jenkins-test.service
+sudo systemctl start kestrel-Jenkins-test.service
 sudo service nginx start
